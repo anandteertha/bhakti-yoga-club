@@ -7,6 +7,7 @@ import { usePageTitle } from "@/hooks/usePageTitle";
 import { formatEventDateRange, getEventBySlug, isEventPast } from "@/data/clubEvents";
 import { categoryLabels } from "@/data/pastEvents";
 import type { GalleryImage } from "@/data/media";
+import { assetUrl } from "@/lib/assetUrl";
 
 export function EventDetailPage() {
   const { slug } = useParams();
@@ -37,7 +38,7 @@ export function EventDetailPage() {
 
   const past = isEventPast(event);
   const galleryItems: GalleryImage[] = event.gallery.map((g) => ({
-    src: g.src,
+    src: assetUrl(g.src),
     alt: g.alt,
     caption: g.alt,
   }));
@@ -69,7 +70,7 @@ export function EventDetailPage() {
 
         {event.coverImage ? (
           <figure className="mt-8 overflow-hidden rounded-[2rem] border border-amber-200/80 shadow-lg">
-            <img src={event.coverImage} alt="" className="w-full object-cover" loading="lazy" />
+            <img src={assetUrl(event.coverImage)} alt="" className="w-full object-cover" loading="lazy" />
           </figure>
         ) : null}
 

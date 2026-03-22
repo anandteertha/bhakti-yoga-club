@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { GalleryImage } from "@/data/media";
+import { assetUrl } from "@/lib/assetUrl";
 import { ImageLightbox } from "./ImageLightbox";
 
 type PhotoGalleryProps = {
@@ -49,12 +50,12 @@ export function PhotoGallery({
             <button
               type="button"
               className="relative block w-full text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2"
-              onClick={() => setLightbox(item)}
+              onClick={() => setLightbox({ ...item, src: assetUrl(item.src) })}
             >
               <span className="sr-only">View larger: {item.alt}</span>
               <div className={`relative overflow-hidden ${aspectClass[aspect]}`}>
                 <img
-                  src={item.src}
+                  src={assetUrl(item.src)}
                   alt={item.alt}
                   className={`h-full w-full object-cover transition duration-500 group-hover:scale-[1.04] ${
                     aspect === "auto" ? "max-h-80 w-full object-cover" : ""

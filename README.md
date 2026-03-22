@@ -17,6 +17,20 @@ npm run preview  # preview the production build locally
 npm run lint
 ```
 
+## Deploying To GitHub Pages
+
+This repo includes `.github/workflows/deploy.yml`, which builds and deploys the Vite app to GitHub Pages on every push to `main`.
+
+One-time GitHub setup:
+
+1. In repository Settings -> Pages, set the source to `GitHub Actions`.
+2. If you want CI to refresh the bundled events fallback during deploys, add these repository variables in Settings -> Secrets and variables -> Actions:
+   - `VITE_EVENTS_SHEET_CSV_URL`
+   - `EVENTS_SHEET_CSV_URL`
+   - `VITE_MEDIA_BASE` (optional)
+
+After that, pushing to `main` publishes `dist/`. The workflow also copies `index.html` to `404.html` so direct visits to nested SPA routes continue to work on Pages.
+
 ---
 
 ## Events: Google Sheet + live refresh (recommended)

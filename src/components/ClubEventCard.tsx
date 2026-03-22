@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import type { ClubEventRecord } from "@/types/clubEvent";
 import { formatEventDateRange, isEventPast } from "@/data/clubEvents";
 import { categoryLabels } from "@/data/pastEvents";
+import { assetUrl } from "@/lib/assetUrl";
 
 type ClubEventCardProps = {
   event: ClubEventRecord;
@@ -14,7 +15,7 @@ export function ClubEventCard({ event }: ClubEventCardProps) {
       <Link to={`/events/${event.slug}`} className="relative block aspect-[16/9] overflow-hidden bg-amber-100/50">
         {event.coverImage ? (
           <img
-            src={event.coverImage}
+            src={assetUrl(event.coverImage)}
             alt={event.title}
             className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
             loading="lazy"

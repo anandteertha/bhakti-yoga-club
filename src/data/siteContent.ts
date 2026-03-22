@@ -1,4 +1,5 @@
 import { FACEBOOK_EVENTS, LEGACY_SITE } from "./constants";
+import { assetUrl } from "@/lib/assetUrl";
 
 export const club = {
   name: "SEVA Bhakti Yoga Club @ NCSU",
@@ -7,7 +8,7 @@ export const club = {
 
 /** Official circular mark — file in /public */
 export const brand = {
-  logoSrc: "/brand-logo.png",
+  logoSrc: assetUrl("/brand-logo.png"),
   logoAlt:
     "SEVA Bhakti Yoga Club — North Carolina State University: Hare Krishna mantra, lotus emblem, and club wordmark",
 } as const;

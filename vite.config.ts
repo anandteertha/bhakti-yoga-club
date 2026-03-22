@@ -3,6 +3,14 @@ import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig, loadEnv } from "vite";
 
+function normalizeBasePath(basePath?: string): string {
+  if (!basePath || basePath === "/") {
+    return "/";
+  }
+
+  return `/${basePath.replace(/^\/+|\/+$/g, "")}/`;
+}
+
 /**
  * Dev-only proxy so `fetch` hits same-origin `/__events_sheet_proxy/...` and avoids
  * browser CORS when talking to docs.google.com. Production still uses the full CSV URL.
@@ -10,6 +18,14 @@ import { defineConfig, loadEnv } from "vite";
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
   const sheet = env.VITE_EVENTS_SHEET_CSV_URL;
+  const configuredBase =
+    env.VITE_BASE_PATH?.trim() ||
+    process.env.VITE_BASE_PATH?.trim() ||
+    process.env.BASE_PATH?.trim() ||
+    (() => {
+      const repoName = process.env.GITHUB_REPOSITORY?.split("/")[1];
+      return process.env.GITHUB_ACTIONS === "true" && repoName ? `/${repoName}/` : undefined;
+    })();
   const proxy: Record<string, { target: string; changeOrigin: boolean; rewrite: (p: string) => string }> = {};
 
   if (sheet) {
@@ -26,6 +42,7 @@ export default defineConfig(({ mode }) => {
   }
 
   return {
+    base: normalizeBasePath(configuredBase),
     plugins: [react(), tailwindcss()],
     define: {
       global: "globalThis",
