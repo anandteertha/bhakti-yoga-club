@@ -1,15 +1,15 @@
-# Club events — Google Sheet
+# Club events - Google Sheet
 
-## Live updates (refresh)
+## Live updates
 
-Set **`VITE_EVENTS_SHEET_CSV_URL`** in `.env` to your sheet’s **CSV export URL** (see root **`README.md`**). The app fetches the sheet **on every page load** — edit the sheet, refresh the browser, and you see changes without rebuilding.
+Set `VITE_EVENTS_SHEET_CSV_URL` in `.env` to your sheet's tab URL (with `gid`) or CSV export URL (see the root `README.md`). The app fetches the sheet on every page load, so you can edit the sheet, refresh the browser, and see updates without rebuilding.
 
-Optional: **`EVENTS_SHEET_CSV_URL`** (same URL) for `npm run sync-events`, which writes `src/content/events.json` as a fallback when the browser cannot reach Google.
+Optional: `EVENTS_SHEET_CSV_URL` can use the same value for `npm run sync-events`, which writes `src/content/events.json` as a fallback when the browser cannot reach Google.
 
-## Column reference & images
+## Column reference and images
 
-See the **Events** section in the repository **`README.md`** (project root).
+See the Events section in the repository `README.md`.
 
 ## Template
 
-Import **`docs/events-sheet-template.csv`** into Google Sheets — see **`docs/GOOGLE_SHEET_TEMPLATE.md`** for upload steps and how to copy the export URL.
+Import `docs/events-sheet-template.csv` into Google Sheets if you want a starter row.

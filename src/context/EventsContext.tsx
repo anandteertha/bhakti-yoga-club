@@ -10,6 +10,7 @@ import {
 import type { ClubEventRecord, EventsFile } from "@/types/clubEvent";
 import fallbackFile from "@/content/events.json";
 import { parseEventsCsv } from "@/lib/eventsFromCsv";
+import { normalizeEventsSheetCsvUrl } from "@/lib/eventsSheetUrl";
 
 const FALLBACK_EVENTS = (fallbackFile as EventsFile).events;
 
@@ -28,7 +29,13 @@ const EventsContext = createContext<EventsState | null>(null);
 
 /** Same-origin proxy path in dev (see vite.config.ts) to avoid CORS to Google. */
 function sheetRequestUrl(csvBase: string): string {
-  const u = new URL(csvBase);
+  const normalized = normalizeEventsSheetCsvUrl(csvBase);
+  let u: URL;
+  try {
+    u = new URL(normalized);
+  } catch {
+    throw new Error(`Invalid VITE_EVENTS_SHEET_CSV_URL (not a valid URL): ${csvBase}`);
+  }
   u.searchParams.set("t", String(Date.now()));
   const full = u.toString();
   if (import.meta.env.DEV) {

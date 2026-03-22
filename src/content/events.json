@@ -1,14 +1,51 @@
 {
   "events": [
     {
-      "slug": "example-past-entry",
-      "title": "Example past event (edit or delete)",
-      "date": "2024-09-01",
+      "slug": "upcoming-sample",
+      "title": "Spring kirtan — sample upcoming",
+      "date": "2030-04-15",
       "endDate": null,
       "time": "6:30 PM",
-      "summary": "Sample row so you can see how past events render. Remove this when you add real events.",
-      "description": "This entry lives in src/content/events.json.\n\nAdd real copy here, or delete this object. After the end date passes, it automatically appears under Past.",
-      "location": "Cox Hall, room 200",
+      "summary": "Replace this line with your real short blurb for cards.",
+      "description": "This is the long description for the event detail page. In Google Sheets press Alt+Enter inside this cell to add paragraph breaks.\n\nAfter you import this file delete or edit the sample rows.",
+      "location": "Cox Hall room 200",
+      "category": "programs",
+      "coverImage": null,
+      "gallery": [],
+      "rsvpUrl": "https://www.facebook.com/SEVA.NCSU/events"
+    },
+    {
+      "slug": "past-sample",
+      "title": "Stress-less week — sample past",
+      "date": "2024-11-01",
+      "endDate": null,
+      "time": "7:00 PM",
+      "summary": "Example row that shows as past because the date has passed.",
+      "description": "Add your real copy here. Put photo paths in the gallery column when images are in public/events/your-slug/",
+      "location": "Cox Hall room 200",
+      "category": "wellness",
+      "coverImage": null,
+      "gallery": [
+        {
+          "src": "/events/past-sample/01.jpg",
+          "alt": "Evening gathering"
+        },
+        {
+          "src": "/events/past-sample/02.jpg",
+          "alt": "Discussion"
+        }
+      ],
+      "rsvpUrl": null
+    },
+    {
+      "slug": "retreat-weekend",
+      "title": "Retreat weekend — multi-day example",
+      "date": "2030-08-01",
+      "endDate": "2030-08-03",
+      "time": null,
+      "summary": "Friday evening through Sunday. Use endDate for the last day.",
+      "description": "First and last day are date and endDate. Single-day events leave endDate empty.",
+      "location": "Off campus TBD",
       "category": "programs",
       "coverImage": null,
       "gallery": [],

@@ -5,8 +5,8 @@ import { ImageLightbox } from "@/components/ImageLightbox";
 import { PageIntro } from "@/components/PageIntro";
 import { RsvpBanner } from "@/components/RsvpBanner";
 import { SectionHeading } from "@/components/SectionHeading";
-import { usePageTitle } from "@/hooks/usePageTitle";
 import { useEvents } from "@/context/EventsContext";
+import { usePageTitle } from "@/hooks/usePageTitle";
 import { getPastEvents } from "@/data/clubEvents";
 import { vineDividerSrc } from "@/data/media";
 import {
@@ -20,8 +20,9 @@ const ALL = "all" as const;
 
 export function PastEventsPage() {
   usePageTitle("Past Events");
-  const { events } = useEvents();
+  const { events, status, fetchError, source } = useEvents();
   const jsonPast = getPastEvents(events);
+  const sheetUrl = import.meta.env.VITE_EVENTS_SHEET_CSV_URL;
   const [filter, setFilter] = useState<typeof ALL | EventCategory>(ALL);
   const [lightbox, setLightbox] = useState<{ src: string; alt: string } | null>(null);
 
@@ -40,16 +41,46 @@ export function PastEventsPage() {
     <>
       <PageIntro
         title="Past events"
-        subtitle="Events you list in events.json (past dates) appear first. Below that: the legacy photo archive — tap any photo to enlarge."
+        subtitle={
+          sheetUrl
+            ? "Past dates from your events sheet appear first. Below that: the legacy photo archive - tap any photo to enlarge."
+            : "Past dates from the bundled event list appear first. Below that: the legacy photo archive - tap any photo to enlarge."
+        }
       />
 
       <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-14">
-        {jsonPast.length > 0 ? (
+        {fetchError && sheetUrl ? (
+          <p className="mb-8 rounded-xl border border-amber-300/80 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+            Could not load the live sheet ({fetchError}). Showing the bundled copy instead.
+          </p>
+        ) : null}
+
+        {status === "loading" && sheetUrl ? (
           <section className="mb-16">
             <SectionHeading
               eyebrow="This site"
               title="Recorded events"
-              subtitle="Details and galleries from events.json. Upcoming items live on the Events page."
+              subtitle="Loading the latest past events from your sheet..."
+            />
+            <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {[1, 2, 3].map((i) => (
+                <div
+                  key={i}
+                  className="h-72 animate-pulse rounded-2xl border border-amber-200/60 bg-amber-100/40"
+                />
+              ))}
+            </div>
+          </section>
+        ) : jsonPast.length > 0 ? (
+          <section className="mb-16">
+            <SectionHeading
+              eyebrow="This site"
+              title="Recorded events"
+              subtitle={
+                source === "sheet"
+                  ? "Details and galleries from the Google Sheet. Upcoming items stay on the Events page."
+                  : "Details and galleries from the bundled site data. Upcoming items stay on the Events page."
+              }
             />
             <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {jsonPast.map((e) => (
@@ -57,14 +88,18 @@ export function PastEventsPage() {
               ))}
             </div>
             <p className="mt-6 text-center text-sm text-slate-600">
-              Manage the list in{" "}
-              <code className="rounded bg-slate-100 px-1.5 py-0.5 text-xs">src/content/events.json</code> — see{" "}
+              Manage the list in your Google Sheet and refresh the site. The bundled fallback copy lives in{" "}
+              <code className="rounded bg-slate-100 px-1.5 py-0.5 text-xs">src/content/events.json</code> - see{" "}
               <Link className="font-semibold text-emerald-900 underline" to="/events">
                 Events
               </Link>
               .
             </p>
           </section>
+        ) : sheetUrl ? (
+          <p className="mb-16 text-slate-600">
+            No past entries yet. After an event&apos;s final day, it moves here automatically from the sheet.
+          </p>
         ) : null}
 
         <div className="rounded-[2rem] border border-amber-200/70 bg-gradient-to-br from-amber-50/90 via-white to-emerald-50/50 p-8 shadow-sm sm:p-12">
@@ -83,7 +118,7 @@ export function PastEventsPage() {
               {years.map((y) => (
                 <li key={y}>
                   <span className="font-semibold text-emerald-900">{y}</span>
-                  <span className="text-slate-500"> — archive</span>
+                  <span className="text-slate-500"> - archive</span>
                 </li>
               ))}
             </ul>
@@ -153,11 +188,7 @@ export function PastEventsPage() {
       </div>
 
       {lightbox ? (
-        <ImageLightbox
-          src={lightbox.src}
-          alt={lightbox.alt}
-          onClose={() => setLightbox(null)}
-        />
+        <ImageLightbox src={lightbox.src} alt={lightbox.alt} onClose={() => setLightbox(null)} />
       ) : null}
     </>
   );

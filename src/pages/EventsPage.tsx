@@ -20,7 +20,7 @@ export function EventsPage() {
         title="Events"
         subtitle={
           sheetUrl
-            ? "Upcoming and past update when you refresh — data is fetched from your Google Sheet (see .env)."
+            ? "Upcoming and past update when you refresh - data is fetched from your Google Sheet (see .env)."
             : "Upcoming programs and past gatherings from bundled events data. Add VITE_EVENTS_SHEET_CSV_URL for live sheet sync."
         }
       />
@@ -31,7 +31,7 @@ export function EventsPage() {
             Could not load the live sheet ({fetchError}). Showing the bundled copy.{" "}
             {import.meta.env.DEV
               ? "Dev uses a Vite proxy; if this persists, check the URL."
-              : "On production, a browser may block cross-origin requests — see README for proxy options."}
+              : "On production, a browser may block cross-origin requests - see README for proxy options."}
           </p>
         ) : null}
 
@@ -84,9 +84,7 @@ export function EventsPage() {
               ))}
             </div>
           ) : past.length === 0 ? (
-            <p className="mt-8 text-slate-600">
-              No past entries yet — past dates move here automatically from the sheet.
-            </p>
+            <p className="mt-8 text-slate-600">No past entries yet - past dates move here automatically from the sheet.</p>
           ) : (
             <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {past.map((e) => (

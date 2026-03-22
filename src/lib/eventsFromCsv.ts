@@ -70,6 +70,7 @@ function nullIfEmpty(s: unknown): string | null {
 }
 
 type RowObj = Record<string, string | undefined>;
+const HTML_RESPONSE_RE = /^<(?:!doctype|html|head|body)\b/i;
 
 function rowToEvent(row: RowObj): ClubEventRecord | null {
   const obj: Record<string, unknown> = {};
@@ -119,7 +120,11 @@ function rowToEvent(row: RowObj): ClubEventRecord | null {
  * Parse exported Google Sheet CSV into club events (same rules as `npm run sync-events`).
  */
 export function parseEventsCsv(csv: string): ClubEventRecord[] {
-  const records = parse(csv, {
+  const normalized = csv.replace(/^\uFEFF/, "").trimStart();
+  if (HTML_RESPONSE_RE.test(normalized)) {
+    throw new Error("Expected CSV but received HTML. Make sure the sheet is shared for viewing.");
+  }
+  const records = parse(normalized, {
     columns: true,
     skip_empty_lines: true,
     trim: true,
