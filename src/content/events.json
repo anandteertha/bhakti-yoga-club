@@ -1,0 +1,18 @@
+{
+  "events": [
+    {
+      "slug": "example-past-entry",
+      "title": "Example past event (edit or delete)",
+      "date": "2024-09-01",
+      "endDate": null,
+      "time": "6:30 PM",
+      "summary": "Sample row so you can see how past events render. Remove this when you add real events.",
+      "description": "This entry lives in src/content/events.json.\n\nAdd real copy here, or delete this object. After the end date passes, it automatically appears under Past.",
+      "location": "Cox Hall, room 200",
+      "category": "programs",
+      "coverImage": null,
+      "gallery": [],
+      "rsvpUrl": null
+    }
+  ]
+}

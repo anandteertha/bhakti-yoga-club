@@ -1,0 +1,2 @@
+slug,title,date,endDate,time,summary,description,location,category,coverImage,rsvpUrl,gallery,draft
+example-row,Replace this title,2025-12-01,,6:30 PM,One-line blurb for cards.,"Full description. In Google Sheets use Alt+Enter inside a cell for paragraph breaks. This becomes the detail page.",Cox Hall room 200,programs,/events/example/cover.jpg,https://www.facebook.com/SEVA.NCSU/events,/events/example/1.jpg|Kirtan;;/events/example/2.jpg|Prasadam,yes

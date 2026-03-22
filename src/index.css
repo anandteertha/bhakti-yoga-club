@@ -1,0 +1,48 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Cormorant Garamond", Georgia, "Times New Roman", serif;
+  --font-sans: "Source Sans 3", system-ui, sans-serif;
+
+  --color-saffron-50: #fff8f0;
+  --color-saffron-100: #ffecd4;
+  --color-saffron-200: #ffd49a;
+  --color-saffron-400: #f59e0b;
+  --color-saffron-500: #d97706;
+  --color-saffron-700: #b45309;
+  --color-saffron-900: #78350f;
+
+  --color-forest-800: #14532d;
+  --color-forest-900: #052e16;
+  --color-forest-950: #022c1c;
+
+  --color-ink-700: #334155;
+  --color-ink-900: #0f172a;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-[var(--color-saffron-50)] text-slate-900 antialiased font-sans;
+    font-family: var(--font-sans);
+  }
+}
+
+@layer utilities {
+  .animate-fade-up {
+    animation: fade-up 0.7s ease-out both;
+  }
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
