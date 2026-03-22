@@ -1,32 +1,17 @@
-/**
- * Pulls a public Google Sheet (CSV export URL) and writes src/content/events.json.
- *
- * Set EVENTS_SHEET_CSV_URL in .env or the environment. If unset, exits 0 without changing files
- * (keeps hand-edited JSON for local work).
- *
- * @see public/events/README.md
- */
-import "dotenv/config";
-import fs from "node:fs";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
 import { parse } from "csv-parse/sync";
+import type { ClubEventRecord } from "@/types/clubEvent";
+import type { EventCategory } from "@/data/pastEvents";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const ROOT = path.join(__dirname, "..");
-const OUT = path.join(ROOT, "src", "content", "events.json");
+const CATEGORIES = new Set<string>(["speakers", "programs", "wellness"]);
 
-const CATEGORIES = new Set(["speakers", "programs", "wellness"]);
-
-/** Normalize headers: "End Date" / "end_date" → "enddate" */
-function normHeader(h) {
+function normHeader(h: string): string {
   return String(h ?? "")
     .trim()
     .toLowerCase()
     .replace(/[\s_]+/g, "");
 }
 
-const KEY_MAP = new Map([
+const KEY_MAP = new Map<string, string>([
   ["slug", "slug"],
   ["title", "title"],
   ["date", "date"],
@@ -55,14 +40,14 @@ const KEY_MAP = new Map([
   ["ignore", "draft"],
 ]);
 
-function isDraft(val) {
+function isDraft(val: unknown): boolean {
   const s = String(val ?? "")
     .trim()
     .toLowerCase();
   return s === "yes" || s === "y" || s === "true" || s === "1" || s === "x" || s === "draft";
 }
 
-function parseGallery(cell) {
+function parseGallery(cell: unknown): { src: string; alt: string }[] {
   const raw = String(cell ?? "").trim();
   if (!raw) return [];
   return raw
@@ -79,13 +64,15 @@ function parseGallery(cell) {
     });
 }
 
-function nullIfEmpty(s) {
+function nullIfEmpty(s: unknown): string | null {
   const t = String(s ?? "").trim();
   return t === "" ? null : t;
 }
 
-function rowToEvent(row) {
-  const obj = {};
+type RowObj = Record<string, string | undefined>;
+
+function rowToEvent(row: RowObj): ClubEventRecord | null {
+  const obj: Record<string, unknown> = {};
   for (const [key, val] of Object.entries(row)) {
     const nk = KEY_MAP.get(normHeader(key));
     if (nk) obj[nk] = val;
@@ -105,12 +92,10 @@ function rowToEvent(row) {
     .toLowerCase();
 
   if (!title || !date || !summary || !description) {
-    console.warn(`[sync-events] Skipping row "${slug || "(no slug)"}": missing title, date, summary, or description.`);
     return null;
   }
 
   if (!CATEGORIES.has(category)) {
-    console.warn(`[sync-events] Skipping "${slug}": invalid category "${category}" (use speakers, programs, wellness).`);
     return null;
   }
 
@@ -123,48 +108,29 @@ function rowToEvent(row) {
     summary,
     description,
     location: nullIfEmpty(obj.location),
-    category,
+    category: category as EventCategory,
     coverImage: nullIfEmpty(obj.coverImage),
     gallery: parseGallery(obj.gallery),
     rsvpUrl: nullIfEmpty(obj.rsvpUrl),
   };
 }
 
-async function main() {
-  const url = process.env.EVENTS_SHEET_CSV_URL?.trim();
-  if (!url) {
-    console.info("[sync-events] EVENTS_SHEET_CSV_URL not set — skipping (keeping src/content/events.json as-is).");
-    process.exit(0);
-  }
-
-  console.info("[sync-events] Fetching CSV…");
-  const res = await fetch(url, { redirect: "follow" });
-  if (!res.ok) {
-    console.error(`[sync-events] HTTP ${res.status} ${res.statusText}`);
-    process.exit(1);
-  }
-
-  const csv = await res.text();
+/**
+ * Parse exported Google Sheet CSV into club events (same rules as `npm run sync-events`).
+ */
+export function parseEventsCsv(csv: string): ClubEventRecord[] {
   const records = parse(csv, {
     columns: true,
     skip_empty_lines: true,
     trim: true,
     relax_quotes: true,
     relax_column_count: true,
-  });
+  }) as RowObj[];
 
-  const events = [];
+  const events: ClubEventRecord[] = [];
   for (const row of records) {
     const ev = rowToEvent(row);
     if (ev) events.push(ev);
   }
-
-  fs.mkdirSync(path.dirname(OUT), { recursive: true });
-  fs.writeFileSync(OUT, `${JSON.stringify({ events }, null, 2)}\n`, "utf8");
-  console.info(`[sync-events] Wrote ${events.length} event(s) → ${path.relative(ROOT, OUT)}`);
+  return events;
 }
-
-main().catch((err) => {
-  console.error("[sync-events]", err);
-  process.exit(1);
-});

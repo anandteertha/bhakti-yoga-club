@@ -2,6 +2,7 @@ import { Link, useParams } from "react-router-dom";
 import { PageIntro } from "@/components/PageIntro";
 import { PhotoGallery } from "@/components/PhotoGallery";
 import { RsvpBanner } from "@/components/RsvpBanner";
+import { useEvents } from "@/context/EventsContext";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { formatEventDateRange, getEventBySlug, isEventPast } from "@/data/clubEvents";
 import { categoryLabels } from "@/data/pastEvents";
@@ -9,8 +10,17 @@ import type { GalleryImage } from "@/data/media";
 
 export function EventDetailPage() {
   const { slug } = useParams();
-  const event = slug ? getEventBySlug(slug) : undefined;
+  const { events, status } = useEvents();
+  const event = getEventBySlug(events, slug);
   usePageTitle(event?.title ?? "Event");
+
+  if (status === "loading") {
+    return (
+      <div className="mx-auto max-w-4xl px-4 py-24 text-center sm:px-6">
+        <p className="text-slate-600">Loading event…</p>
+      </div>
+    );
+  }
 
   if (!event) {
     return (
@@ -95,7 +105,8 @@ export function EventDetailPage() {
               Gallery
             </h2>
             <p className="mt-2 text-sm text-slate-600">
-              Add or update images in <code className="rounded bg-slate-100 px-1">events.json</code> after the event.
+              Images listed in your sheet for this event (<code className="rounded bg-slate-100 px-1">gallery</code>{" "}
+              column).
             </p>
             <div className="mt-8">
               <PhotoGallery items={galleryItems} columns={3} aspect="landscape" />
@@ -103,8 +114,8 @@ export function EventDetailPage() {
           </div>
         ) : past ? (
           <p className="mt-10 rounded-xl border border-dashed border-amber-200/80 bg-amber-50/40 px-4 py-3 text-sm text-slate-600">
-            No gallery yet — drop images under <code className="text-xs">public/events/{event.slug}/</code> and list them
-            in <code className="text-xs">events.json</code>.
+            No gallery yet — add files under <code className="text-xs">public/events/{event.slug}/</code> and list them
+            in the sheet.
           </p>
         ) : null}
 

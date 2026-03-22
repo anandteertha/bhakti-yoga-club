@@ -1,2 +1,7 @@
 slug,title,date,endDate,time,summary,description,location,category,coverImage,rsvpUrl,gallery,draft
-example-row,Replace this title,2025-12-01,,6:30 PM,One-line blurb for cards.,"Full description. In Google Sheets use Alt+Enter inside a cell for paragraph breaks. This becomes the detail page.",Cox Hall room 200,programs,/events/example/cover.jpg,https://www.facebook.com/SEVA.NCSU/events,/events/example/1.jpg|Kirtan;;/events/example/2.jpg|Prasadam,yes
+upcoming-sample,Spring kirtan — sample upcoming,2030-04-15,,6:30 PM,Replace this line with your real short blurb for cards.,"This is the long description for the event detail page. In Google Sheets press Alt+Enter inside this cell to add paragraph breaks.
+
+After you import this file delete or edit the sample rows.",Cox Hall room 200,programs,,https://www.facebook.com/SEVA.NCSU/events,,no
+past-sample,Stress-less week — sample past,2024-11-01,,7:00 PM,Example row that shows as past because the date has passed.,Add your real copy here. Put photo paths in the gallery column when images are in public/events/your-slug/,Cox Hall room 200,wellness,,,/events/past-sample/01.jpg|Evening gathering;;/events/past-sample/02.jpg|Discussion,no
+retreat-weekend,Retreat weekend — multi-day example,2030-08-01,2030-08-03,,Friday evening through Sunday. Use endDate for the last day.,First and last day are date and endDate. Single-day events leave endDate empty.,Off campus TBD,programs,,,,no
+draft-planning,Not published yet — draft example,2030-01-01,,12:00 PM,This entire row is hidden on the website.,Set draft to yes to keep planning rows out of the site.,,programs,,,,yes

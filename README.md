@@ -12,115 +12,115 @@ npm run dev
 Open the local URL Vite prints (usually `http://localhost:5173`).
 
 ```bash
-npm run build    # production build (see Events section — runs sheet sync first)
+npm run build    # runs optional sheet → JSON sync, then TypeScript + Vite build
 npm run preview  # preview the production build locally
 npm run lint
 ```
 
 ---
 
-## Events: Google Sheet workflow (recommended)
+## Events: Google Sheet + live refresh (recommended)
 
-Editors use a **Google Sheet** instead of editing JSON. A script downloads the sheet as CSV during `npm run build` (or when you run `npm run sync-events`) and writes `src/content/events.json`. The site then shows **upcoming** and **past** events automatically based on dates.
+Editors maintain a **Google Sheet**. The **website fetches the sheet in the browser** whenever someone loads or **refreshes** a page (no redeploy needed for event text and dates). Image files still live in `public/` in the repo; you only put **paths** in the sheet.
+
+### Environment variables
+
+Copy `.env.example` to `.env` (gitignored).
+
+| Variable | Purpose |
+|----------|---------|
+| **`VITE_EVENTS_SHEET_CSV_URL`** | **Required for live updates.** The public CSV export URL of your sheet (below). Exposed to the client so the app can fetch it on each load. |
+| **`EVENTS_SHEET_CSV_URL`** | Optional. Same URL for **`npm run sync-events`** / **`npm run build`**, which writes `src/content/events.json` as a **fallback bundle** when the browser cannot reach Google (offline, or some production CORS cases). Can match `VITE_EVENTS_SHEET_CSV_URL`. |
 
 ### One-time setup
 
-1. **Create a Google Sheet** with a header row. Use the column names in the [column reference](#column-reference) below (or import the starter file `docs/events-sheet-template.csv` via **File → Import** in Google Sheets).
+1. **Create a Google Sheet** from the template: import **`docs/events-sheet-template.csv`** (full steps in **`docs/GOOGLE_SHEET_TEMPLATE.md`**).
 
-2. **Share the sheet** so the build can read it:
-   - **Share** → **General access** → **Anyone with the link** → **Viewer**.
+2. **Share** the sheet: **Anyone with the link** → **Viewer**.
 
-3. **Get the CSV export URL** (not the normal “edit” link):
-   - Open the tab that holds your events (for example “Events”).
-   - Copy the **spreadsheet ID** from the address bar: the long id between `/d/` and `/edit`.
-   - With that tab selected, copy the **gid** from the URL (`gid=...`). The first tab is often `gid=0`, but **always copy it from the URL** for the tab you use.
+3. **CSV export URL** (this is what both env vars use):
 
-   Build this URL (replace `YOUR_SHEET_ID` and `YOUR_GID`):
+   - Open the tab that holds events.
+   - Copy the spreadsheet **ID** from the URL (between `/d/` and `/edit`).
+   - With that tab selected, copy **gid** from the URL.
 
    `https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/export?format=csv&gid=YOUR_GID`
 
-4. **Configure the project**  
-   Copy `.env.example` to `.env` in the project root (`.env` is gitignored). Set:
+4. In **`.env`**:
 
    ```env
+   VITE_EVENTS_SHEET_CSV_URL=https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/export?format=csv&gid=YOUR_GID
    EVENTS_SHEET_CSV_URL=https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/export?format=csv&gid=YOUR_GID
    ```
 
-5. **Test the sync**:
+5. Run **`npm run dev`**, open **Events** — you should see data from the sheet after it loads. **Edit the sheet, save, refresh the browser** — changes appear without rebuilding.
 
-   ```bash
-   npm run sync-events
-   ```
+### How live fetch works
 
-   You should see a message that `src/content/events.json` was written. Run `npm run dev` and check the **Events** page.
+- On load, the app requests the CSV (with a cache-busting query so browsers do not serve a stale copy).
+- **Local development:** Vite proxies requests through `/__events_sheet_proxy` so the browser does not hit cross-origin **CORS** issues with `docs.google.com`.
+- **Production:** the browser requests Google directly. If the browser blocks the request (CORS), the app **falls back** to the last bundled `src/content/events.json` and shows a small notice. Mitigations: run `npm run sync-events` before deploy so the bundle is fresh, or put a same-origin proxy in front of your site that forwards to the CSV URL.
 
-6. **Production / CI**  
-   Add the same `EVENTS_SHEET_CSV_URL` value as a **secret** in your hosting provider (GitHub Actions, Netlify, Vercel, etc.) so `npm run build` can pull the latest sheet on each deploy.
+### Optional: bundle JSON for CI / fallback
 
-If `EVENTS_SHEET_CSV_URL` is **not** set, `npm run sync-events` does nothing and **does not overwrite** `events.json` — useful if someone edits the JSON file by hand locally.
+```bash
+npm run sync-events   # uses EVENTS_SHEET_CSV_URL or VITE_EVENTS_SHEET_CSV_URL
+```
+
+`npm run build` runs this first. If neither URL is set, sync is skipped and existing `events.json` is left unchanged.
 
 ### Column reference
 
 | Column | Required | Description |
 |--------|------------|-------------|
-| **slug** | yes | URL-safe id for `/events/your-slug`. Lowercase, use hyphens, no spaces. |
+| **slug** | yes | URL-safe id: `/events/your-slug`. Lowercase, hyphens. |
 | **title** | yes | Event title. |
-| **date** | yes | First day, format `YYYY-MM-DD`. |
-| **endDate** | no | Last day for multi-day events. Leave empty for a single day. |
-| **time** | no | Free text, e.g. `6:30 PM`. |
-| **summary** | yes | Short line for cards and listings. |
-| **description** | yes | Longer text. In Google Sheets, use **Alt+Enter** inside the cell for line breaks. |
+| **date** | yes | First day: `YYYY-MM-DD`. |
+| **endDate** | no | Last day for multi-day events. |
+| **time** | no | e.g. `6:30 PM`. |
+| **summary** | yes | Short line for cards. |
+| **description** | yes | Long text. In Sheets: **Alt+Enter** for line breaks. |
 | **location** | no | e.g. `Cox Hall, room 200`. |
-| **category** | yes | One of: `speakers`, `programs`, `wellness`. |
-| **coverImage** | no | Web path to the hero image (see [images](#adding-and-updating-images)). |
-| **rsvpUrl** | no | Facebook or ticket link; shown while the event is still upcoming. |
-| **gallery** | no | Multiple images in one cell (see [gallery format](#gallery-format-in-the-sheet)). |
-| **draft** | no | Put `yes` to **exclude** this row from the site (planning / work in progress). |
+| **category** | yes | `speakers`, `programs`, or `wellness`. |
+| **coverImage** | no | Path under site root (see [images](#adding-and-updating-images)). |
+| **rsvpUrl** | no | Shown while the event is upcoming. |
+| **gallery** | no | See [gallery format](#gallery-format-in-the-sheet). |
+| **draft** | no | `yes` = row is ignored on the site. |
 
-Friendly header aliases work too (for example `Cover`, `RSVP`, `End date`) — see `scripts/sync-events-from-sheet.mjs` for the full mapping.
+Aliases like `Cover`, `RSVP`, `End date` work — see `src/lib/eventsFromCsv.ts`.
 
 ### Adding a new event
 
-1. Add a **new row** in the sheet with a unique **slug** and fill required columns.
-2. Leave **draft** empty or `no` when the event should appear on the site.
-3. **Sync** locally with `npm run sync-events`, or deploy so CI runs `npm run build` (which runs sync first).
-4. Confirm on `/events` and `/events/your-slug`.
+Add a row in the sheet, then **refresh** the site. No `npm run build` required for copy/date changes.
 
 ### Adding and updating images
 
-Images are **not** uploaded into the spreadsheet itself. You add files to the **repository** (or your static host) and put **paths** in the sheet.
+Images are **not** stored in the sheet. Add files under **`public/events/<slug>/`**, commit, deploy, and reference paths in the sheet:
 
-1. **Choose a folder** under `public/events/` using the event slug, for example:
-   - `public/events/spring-kirtan-2025/`
-2. **Add image files** there (`jpg`, `png`, `webp`, etc.), for example `cover.jpg`, `01.jpg`, `02.jpg`.
-3. **In the sheet**, reference them with paths that start at the site root (because `public/` is served as `/`):
-   - **coverImage**: `/events/spring-kirtan-2025/cover.jpg`
-   - **gallery**: use the format below.
-
-4. **Commit** the new files under `public/events/...` with your code, then deploy.
+- **coverImage:** `/events/spring-kirtan-2025/cover.jpg`
+- **gallery:** see below.
 
 ### Gallery format in the sheet
 
-Use a **single cell** for **gallery**. Separate multiple images with `;;`. For each image, use `path|short description`:
+One cell; separate images with `;;`. Each entry: `path|alt text`:
 
 ```text
 /events/spring-kirtan-2025/01.jpg|Kirtan;;/events/spring-kirtan-2025/02.jpg|Prasadam
 ```
 
-The text after `|` is the alt text for accessibility.
-
 ### Past vs upcoming (automatic)
 
-The **last day** of the event is **endDate**, or **date** if endDate is empty. After that calendar day, the event is treated as **past** — you do not move rows manually.
+The last day is **endDate**, or **date** if endDate is empty. After that calendar day, the event is **past** — no manual moves.
 
 ### Without Google Sheets
 
-You can still edit **`src/content/events.json`** directly. If you never set `EVENTS_SHEET_CSV_URL`, sync is skipped and your JSON is left as-is.
+Leave **`VITE_EVENTS_SHEET_CSV_URL`** unset. The app uses **`src/content/events.json`** only. You can edit that file by hand; `npm run sync-events` is optional.
 
 ### More detail
 
-- **`public/events/README.md`** — condensed reference (same workflow).
-- **`docs/events-sheet-template.csv`** — sample row you can import into Google Sheets.
+- **`docs/GOOGLE_SHEET_TEMPLATE.md`** — import the example CSV, share, and copy the export URL.
+- **`docs/events-sheet-template.csv`** — sample rows (upcoming, past, multi-day, draft).
+- **`public/events/README.md`** — short reference.
 
 ---
 
@@ -128,11 +128,10 @@ You can still edit **`src/content/events.json`** directly. If you never set `EVE
 
 See **`.env.example`**:
 
-- **`EVENTS_SHEET_CSV_URL`** — CSV export URL for the events sheet (above).
-- **`VITE_MEDIA_BASE`** — If you mirror legacy media to your own host, set this base URL so image paths resolve correctly (`src/data/constants.ts`).
+- **`VITE_MEDIA_BASE`** — If you mirror legacy media to your own host, set this base URL (`src/data/constants.ts`).
 
 ---
 
 ## License / content
 
-Event and media workflows are documented for club maintainers. Replace sample rows in the sheet or JSON when you go live.
+Maintained by the club. Replace sample rows when you go live.

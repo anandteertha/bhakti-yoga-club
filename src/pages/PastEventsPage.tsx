@@ -6,7 +6,8 @@ import { PageIntro } from "@/components/PageIntro";
 import { RsvpBanner } from "@/components/RsvpBanner";
 import { SectionHeading } from "@/components/SectionHeading";
 import { usePageTitle } from "@/hooks/usePageTitle";
-import { getPastEventsFromFile } from "@/data/clubEvents";
+import { useEvents } from "@/context/EventsContext";
+import { getPastEvents } from "@/data/clubEvents";
 import { vineDividerSrc } from "@/data/media";
 import {
   categoryLabels,
@@ -19,7 +20,8 @@ const ALL = "all" as const;
 
 export function PastEventsPage() {
   usePageTitle("Past Events");
-  const jsonPast = getPastEventsFromFile();
+  const { events } = useEvents();
+  const jsonPast = getPastEvents(events);
   const [filter, setFilter] = useState<typeof ALL | EventCategory>(ALL);
   const [lightbox, setLightbox] = useState<{ src: string; alt: string } | null>(null);
 

@@ -1,7 +1,4 @@
-import eventsFile from "@/content/events.json";
-import type { ClubEventRecord, EventsFile } from "@/types/clubEvent";
-
-const data = eventsFile as EventsFile;
+import type { ClubEventRecord } from "@/types/clubEvent";
 
 /** Today as YYYY-MM-DD in the viewer's local timezone. */
 export function getLocalDateString(d = new Date()): string {
@@ -24,20 +21,24 @@ export function isEventPast(event: ClubEventRecord, today = getLocalDateString()
   return today > getEventEndDateString(event);
 }
 
-export function getUpcomingEvents(): ClubEventRecord[] {
-  return data.events
+export function getUpcomingEvents(events: readonly ClubEventRecord[]): ClubEventRecord[] {
+  return events
     .filter((e) => !isEventPast(e))
     .sort((a, b) => a.date.localeCompare(b.date));
 }
 
-export function getPastEventsFromFile(): ClubEventRecord[] {
-  return data.events
+export function getPastEvents(events: readonly ClubEventRecord[]): ClubEventRecord[] {
+  return events
     .filter((e) => isEventPast(e))
     .sort((a, b) => getEventEndDateString(b).localeCompare(getEventEndDateString(a)));
 }
 
-export function getEventBySlug(slug: string): ClubEventRecord | undefined {
-  return data.events.find((e) => e.slug === slug);
+export function getEventBySlug(
+  events: readonly ClubEventRecord[],
+  slug: string | undefined,
+): ClubEventRecord | undefined {
+  if (!slug) return undefined;
+  return events.find((e) => e.slug === slug);
 }
 
 export function formatEventDateRange(event: ClubEventRecord): string {

@@ -13,12 +13,14 @@ import {
   homeFeatureStills,
   homeHeroAssets,
 } from "@/data/media";
+import { useEvents } from "@/context/EventsContext";
 import { getUpcomingEvents } from "@/data/clubEvents";
 import { posts } from "@/data/posts";
 
 export function HomePage() {
   usePageTitle("Home");
-  const upcoming = getUpcomingEvents();
+  const { events, status, fetchError, source } = useEvents();
+  const upcoming = getUpcomingEvents(events);
   return (
     <>
       {/* Hero */}
@@ -86,12 +88,37 @@ export function HomePage() {
       <div className="mx-auto max-w-6xl space-y-20 px-4 py-16 sm:px-6 sm:py-20">
         <MeetingCard />
 
-        {upcoming.length > 0 ? (
+        {status === "loading" && import.meta.env.VITE_EVENTS_SHEET_CSV_URL ? (
+          <section>
+            <SectionHeading eyebrow="Calendar" title="Upcoming" subtitle="Loading the latest from your sheet…" />
+            <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {[1, 2, 3].map((i) => (
+                <div
+                  key={i}
+                  className="h-64 animate-pulse rounded-2xl border border-amber-200/60 bg-amber-100/40"
+                />
+              ))}
+            </div>
+          </section>
+        ) : null}
+
+        {fetchError && source === "bundle" && import.meta.env.VITE_EVENTS_SHEET_CSV_URL ? (
+          <p className="rounded-xl border border-amber-300/80 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+            Could not load the live sheet ({fetchError}). Showing the last bundled copy. Check{" "}
+            <code className="rounded bg-white px-1 text-xs">VITE_EVENTS_SHEET_CSV_URL</code> and CORS (see README).
+          </p>
+        ) : null}
+
+        {status === "ready" && upcoming.length > 0 ? (
           <section>
             <SectionHeading
               eyebrow="Calendar"
               title="Upcoming"
-              subtitle="From our events list — add or edit entries in events.json (no code changes)."
+              subtitle={
+                source === "sheet"
+                  ? "Live from your Google Sheet — refresh the page to pull the latest rows."
+                  : "From events data bundled with the site."
+              }
             />
             <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {upcoming.slice(0, 3).map((e) => (
@@ -104,6 +131,17 @@ export function HomePage() {
                 className="text-sm font-semibold text-emerald-900 underline hover:no-underline"
               >
                 {upcoming.length > 3 ? `View all ${upcoming.length} upcoming` : "Events page"} →
+              </Link>
+            </p>
+          </section>
+        ) : null}
+
+        {status === "ready" && upcoming.length === 0 && import.meta.env.VITE_EVENTS_SHEET_CSV_URL ? (
+          <section>
+            <SectionHeading eyebrow="Calendar" title="Upcoming" subtitle="No upcoming rows in the sheet right now." />
+            <p className="mt-6 text-center text-sm text-slate-600">
+              <Link to="/events" className="font-semibold text-emerald-900 underline">
+                Events page →
               </Link>
             </p>
           </section>
