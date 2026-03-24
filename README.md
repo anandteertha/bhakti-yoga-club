@@ -17,19 +17,36 @@ npm run preview  # preview the production build locally
 npm run lint
 ```
 
-## Deploying To GitHub Pages
+## Deploying to GitHub Pages
 
-This repo includes `.github/workflows/deploy.yml`, which builds and deploys the Vite app to GitHub Pages on every push to `main`.
+This repo includes [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml). It builds on every push to `main` (and can be run manually under **Actions** → **Deploy to GitHub Pages** → **Run workflow**).
 
-One-time GitHub setup:
+### One-time setup
 
-1. In repository Settings -> Pages, set the source to `GitHub Actions`.
-2. If you want CI to refresh the bundled events fallback during deploys, add these repository variables in Settings -> Secrets and variables -> Actions:
+1. Push this repo to GitHub (if it is not there yet).
+2. **Settings** → **Pages** → **Build and deployment** → **Source**: choose **GitHub Actions** (not “Deploy from a branch”).
+3. **Settings** → **Secrets and variables** → **Actions** → **Variables** (optional but recommended): add the same sheet URLs you use locally so deploys refresh the bundled `events.json` fallback:
    - `VITE_EVENTS_SHEET_CSV_URL`
-   - `EVENTS_SHEET_CSV_URL`
+   - `EVENTS_SHEET_CSV_URL` (can match the line above)
    - `VITE_MEDIA_BASE` (optional)
 
-After that, pushing to `main` publishes `dist/`. The workflow also copies `index.html` to `404.html` so direct visits to nested SPA routes continue to work on Pages.
+If those variables are empty, the site still builds using whatever is already committed under `src/content/events.json`.
+
+4. Push to `main` (or run the workflow). When it finishes, open **Settings** → **Pages** for the live URL (for a normal project repo it is `https://<user>.github.io/<repo>/`).
+
+The workflow sets `VITE_BASE_PATH` from GitHub’s Pages metadata so asset URLs and React Router match your repo path. It also copies `index.html` to `404.html` so deep links (e.g. `/about`) work on Pages.
+
+### Preview a project-site path locally
+
+If the live site is at `https://you.github.io/bhakti-yoga-club/`, you can mimic that path before deploying:
+
+```bash
+set VITE_BASE_PATH=bhakti-yoga-club
+npm run build
+npx vite preview
+```
+
+(On macOS/Linux, use `export VITE_BASE_PATH=bhakti-yoga-club` instead of `set`.)
 
 ---
 
