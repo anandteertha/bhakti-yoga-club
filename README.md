@@ -28,9 +28,9 @@ This repo includes [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml
 3. **Settings** → **Secrets and variables** → **Actions** → **Variables** (optional but recommended): add the same sheet URLs you use locally so deploys refresh the bundled `events.json` fallback:
    - `VITE_EVENTS_SHEET_CSV_URL`
    - `EVENTS_SHEET_CSV_URL` (can match the line above)
-   - `VITE_MEDIA_BASE` (optional)
+   - `VITE_MEDIA_BASE` (optional — omit entirely to keep the default WordPress uploads URL; **do not** create the variable with an empty value, or images used to fall back to root-relative URLs and 404 on GitHub Pages)
 
-If those variables are empty, the site still builds using whatever is already committed under `src/content/events.json`.
+If the sheet variables are unset, the site still builds using whatever is already committed under `src/content/events.json`.
 
 4. Push to `main` (or run the workflow). When it finishes, open **Settings** → **Pages** for the live URL (for a normal project repo it is `https://<user>.github.io/<repo>/`).
 

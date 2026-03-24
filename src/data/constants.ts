@@ -9,10 +9,33 @@ export const FACEBOOK_EVENTS = "https://www.facebook.com/SEVA.NCSU/events" as co
 
 const legacyUploads = `${LEGACY_SITE.replace(/\/$/, "")}/wp-content/uploads`;
 
-/** Base URL for `/wp-content/uploads`-style paths (no trailing slash). */
-export const MEDIA_BASE = (import.meta.env.VITE_MEDIA_BASE?.replace(/\/$/, "") ?? legacyUploads) as string;
+const trimmedMediaEnv = (import.meta.env.VITE_MEDIA_BASE ?? "").trim();
+/** Vite base without trailing slash; empty when site is served at domain root. */
+const viteBase = import.meta.env.BASE_URL.replace(/\/$/, "");
 
-/** Full URL for a file under wp-content/uploads, e.g. `2016/02/meet1.jpg`. */
+/**
+ * Resolves `VITE_MEDIA_BASE`:
+ * - Empty / unset → legacy WordPress uploads URL (full https).
+ * - `https://…` or `//…` → used as-is (no trailing slash).
+ * - Path like `/media` → same-origin under the app, prefixed with `import.meta.env.BASE_URL`
+ *   so GitHub Pages project sites (`/repo/…`) resolve correctly.
+ */
+function resolveMediaBase(): string {
+  const raw = trimmedMediaEnv.replace(/\/$/, "");
+  if (!raw) {
+    return legacyUploads;
+  }
+  if (/^https?:\/\//i.test(raw) || raw.startsWith("//")) {
+    return raw;
+  }
+  const slashPath = raw.startsWith("/") ? raw : `/${raw}`;
+  return viteBase ? `${viteBase}${slashPath}` : slashPath;
+}
+
+/** Base for gallery paths passed to `mediaUrl` (no trailing slash). */
+export const MEDIA_BASE = resolveMediaBase();
+
+/** Full URL for a file under the resolved media base, e.g. `2016/02/meet1.jpg`. */
 export function mediaUrl(path: string): string {
   const p = path.replace(/^\//, "");
   return `${MEDIA_BASE}/${p}`;
